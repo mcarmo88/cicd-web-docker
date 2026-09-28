@@ -1,0 +1,69 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: write   # necessário para publicar no GitHub Pages
+  packages: write   # necessário para publicar a imagem no GitHub Container Registry
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # --- FASE 1: LINT (verificação de qualidade, não são testes) ---
+      - name: Verificar qualidade do HTML
+        run: npx --yes htmlhint index.html
+
+      # --- FASE 2: CARIMBO (o pipeline altera a página automaticamente) ---
+      - name: Carimbar página com info do build
+        run: |
+          BUILD_INFO="Build #${{ github.run_number }} · $(date -u +'%Y-%m-%d %H:%M UTC') · commit ${GITHUB_SHA::7}"
+          sed -i "s|PLACEHOLDER_BUILD_INFO|$BUILD_INFO|" index.html
+
+      # --- FASE 3: IMAGEM DOCKER (build + publicação no registry) ---
+      - name: Gerar nome e tags da imagem
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=latest
+            type=sha
+
+      - name: Login no GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Construir e publicar imagem Docker
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      # --- FASE 4: DEPLOY (publica a página no GitHub Pages) ---
+      - name: Preparar pasta de publicação
+        run: |
+          mkdir -p dist
+          cp index.html style.css dist/
+
+      - name: Publicar no GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
