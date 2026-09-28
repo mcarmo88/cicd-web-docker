@@ -36,3 +36,7 @@ publicado. Corrigir e voltar a fazer commit.
 ## Ficheiros
 - `Dockerfile` — receita da imagem (nginx + a nossa página)
 - `DEMO-DOCKER.md` — guião da demo de Docker para o formador
+
+## Demo de resiliência (containers e Kubernetes)
+Ver `DEMO-RESILIENCIA.md`: 3 réplicas com `docker-compose.yml` (reinício automático)
+e com Kubernetes (`k8s/`), mostrando um novo pod a nascer quando um morre.

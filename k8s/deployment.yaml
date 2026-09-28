@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: painel
+spec:
+  replicas: 3            # estado DESEJADO: 3 pods sempre a correr
+  selector:
+    matchLabels:
+      app: painel
+  template:
+    metadata:
+      labels:
+        app: painel
+    spec:
+      containers:
+        - name: painel
+          # Imagem construída localmente (docker build -t painel-equipa .)
+          image: painel-equipa:latest
+          imagePullPolicy: Never
+          # Alternativa: usar a imagem do pipeline (o pacote tem de ser público)
+          # image: ghcr.io/TEU-UTILIZADOR/NOME-DO-REPO:latest
+          # imagePullPolicy: Always
+          ports:
+            - containerPort: 80
