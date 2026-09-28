@@ -23,12 +23,18 @@ Primeiro constrói a imagem (já inclui o endpoint /whoami):
 
 Cada resposta mostra um nome diferente (o id do container).
 
-Mata um:
+Simula um **crash da aplicação** (mata o nginx por dentro do container):
 
-    docker kill <nome-do-container>
+    docker exec <nome-do-container> nginx -s stop
     docker compose ps
 
-Passados segundos volta a estar "Up" (repara no tempo de execução, que reiniciou). Funciona por causa de `restart: always`.
+O container sai e, passados segundos, volta a estar "Up" (repara no tempo de
+execução, que reiniciou). Funciona por causa de `restart: always`.
+
+> Nota: `docker kill` e `docker stop` **não** disparam o reinício, porque o Docker
+> os trata como uma paragem deliberada do operador. A política de restart só
+> atua quando o container cai por si (crash). Podes usar isto como ponto extra
+> na sessão.
 
 **Ponto a sublinhar:** foi o *mesmo* container que reiniciou. Não há noção de
 "quero sempre 3", não há atualizações graduais, e tudo está numa só máquina.
