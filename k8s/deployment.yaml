@@ -16,7 +16,7 @@ spec:
         - name: painel
           # Troca TEU-UTILIZADOR/NOME-DO-REPO (tudo em minúsculas). O pacote tem de ser público.
           # Alternativa: imagem construída localmente (docker build -t painel-equipa .)
-          # image: painel-equipa:latest
-          # imagePullPolicy: Never
+          image: ghcr.io/mcarmo88/cicd-web-docker:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
