@@ -66,14 +66,14 @@ jobs:
 
       # --- FASE 5: VULNERABILIDADES NAS IMAGENS (Trivy) ---
       - name: Scan de vulnerabilidades — imagem web
-        uses: aquasecurity/trivy-action@57a97c7e
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
         with:
           image-ref: ghcr.io/${{ github.repository }}-web:latest
           severity: CRITICAL,HIGH
           exit-code: '0'   # muda para '1' depois de confirmares o resultado, para bloquear o deploy
 
       - name: Scan de vulnerabilidades — imagem API
-        uses: aquasecurity/trivy-action@57a97c7e
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
         with:
           image-ref: ghcr.io/${{ github.repository }}-api:latest
           severity: CRITICAL,HIGH
