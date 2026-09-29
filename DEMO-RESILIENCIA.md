@@ -56,9 +56,9 @@ Terminal 1 (observar os pods):
 Terminal 2 (pedidos contínuos ao serviço, mostra quem responde):
 
     # macOS/Linux
-    while true; do curl -s localhost:8090/whoami; sleep 1; done
+    while true; do curl -sS localhost:8090/whoami; sleep 1; done
     # Windows PowerShell
-    while ($true) { curl.exe -s localhost:8090/whoami; Start-Sleep 1 }
+    while ($true) { curl.exe -sS localhost:8090/whoami; Start-Sleep 1 }
 
 Verás os 3 nomes de pod a alternar. Agora, num terceiro terminal, mata um pod:
 

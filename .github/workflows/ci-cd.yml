@@ -31,16 +31,18 @@ jobs:
           BUILD_INFO="Build #${{ github.run_number }} · $(date -u +'%Y-%m-%d %H:%M UTC') · commit ${GITHUB_SHA::7}"
           sed -i "s|PLACEHOLDER_BUILD_INFO|$BUILD_INFO|" index.html
 
-      # --- FASE 3: IMAGEM DOCKER (build + publicação no registry) ---
-      - name: Gerar nome e tags da imagem
-        id: meta
-        uses: docker/metadata-action@v5
+      # --- FASE 3: VALIDAÇÃO DOS DOCKERFILES (boas práticas, não são testes) ---
+      - name: Lint ao Dockerfile da web (Hadolint)
+        uses: hadolint/hadolint-action@v3.1.0
         with:
-          images: ghcr.io/${{ github.repository }}
-          tags: |
-            type=raw,value=latest
-            type=sha
+          dockerfile: Dockerfile
 
+      - name: Lint ao Dockerfile da API (Hadolint)
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: api/Dockerfile
+
+      # --- FASE 4: IMAGENS DOCKER (build + publicação no registry) ---
       - name: Login no GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -48,15 +50,36 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Construir e publicar imagem Docker
+      - name: Construir e publicar imagem da web
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ghcr.io/${{ github.repository }}-web:latest
 
-      # --- FASE 4: DEPLOY (publica a página no GitHub Pages) ---
+      - name: Construir e publicar imagem da API
+        uses: docker/build-push-action@v6
+        with:
+          context: ./api
+          push: true
+          tags: ghcr.io/${{ github.repository }}-api:latest
+
+      # --- FASE 5: VULNERABILIDADES NAS IMAGENS (Trivy) ---
+      - name: Scan de vulnerabilidades — imagem web
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ghcr.io/${{ github.repository }}-web:latest
+          severity: CRITICAL,HIGH
+          exit-code: '0'   # muda para '1' depois de confirmares o resultado, para bloquear o deploy
+
+      - name: Scan de vulnerabilidades — imagem API
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ghcr.io/${{ github.repository }}-api:latest
+          severity: CRITICAL,HIGH
+          exit-code: '0'
+
+      # --- FASE 6: DEPLOY (publica a página no GitHub Pages) ---
       - name: Preparar pasta de publicação
         run: |
           mkdir -p dist

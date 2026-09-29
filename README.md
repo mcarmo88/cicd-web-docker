@@ -40,3 +40,21 @@ publicado. Corrigir e voltar a fazer commit.
 ## Demo de resiliência (containers e Kubernetes)
 Ver `DEMO-RESILIENCIA.md`: 3 réplicas com `docker-compose.yml` (reinício automático)
 e com Kubernetes (`k8s/`), mostrando um novo pod a nascer quando um morre.
+
+## API
+
+A pasta `api/` tem uma API mínima (só o módulo `http` do Node, sem dependências)
+que devolve uma frase do dia sobre CI/CD, consumida pela página em `/api/quote`.
+O nginx (`default.conf`) encaminha `/api/...` para o container/pod chamado `api`.
+
+**Importante:** o GitHub Pages só serve ficheiros estáticos, não corre a API.
+Na página publicada em Pages, a secção "Frase do dia" mostra uma mensagem a
+explicar isto — é esperado, e serve de gancho para explicar a diferença entre
+hospedar ficheiros estáticos e correr um serviço. Para veres a API a funcionar
+de verdade, usa `docker compose up` ou o exemplo de Kubernetes (`k8s/`).
+
+## Validações no pipeline
+- **Hadolint** — boas práticas nos dois `Dockerfile` (web e API)
+- **Trivy** — vulnerabilidades conhecidas nas duas imagens publicadas
+Por agora, ambos só reportam (`exit-code: '0'`); podes mudar para `'1'` depois
+de confirmares o resultado, para bloquearem o deploy quando falharem.
